@@ -29,3 +29,19 @@ pnpm-debug.log*
 .cache
 .turbo
 .eslintcache
+
+# TypeScript
+*.tsbuildinfo
+*.d.ts.map
+
+# Test coverage
+coverage
+.nyc_output
+
+# Temporary files
+*.tmp
+*.temp
+.temp
+
+# Supabase local
+.supabase
