@@ -1,0 +1,39 @@
+# Règles projet ERP React + Supabase
+
+## Stack
+- React 19, TypeScript (strict), Vite, TanStack Query, Zustand, shadcn/ui, Tailwind, Supabase
+
+## TypeScript
+- Toujours typage explicite pour props, state et retours de fonctions publiques.
+- Éviter `any` ; utiliser `unknown` et type guards si nécessaire.
+- Préférer `interface` pour objets publics, `type` pour unions/utilitaires.
+- Activer strict mode : noUnusedLocals, noUnusedParameters respectés.
+
+## React
+- Composants fonctionnels uniquement ; pas de classes.
+- Hooks personnalisés pour logique réutilisable (data, side-effects).
+- Un composant = un fichier ; nom du fichier en PascalCase pour composants.
+- Props typées via interface nommée `ComponentNameProps`.
+
+## Données & Supabase
+- TanStack Query pour tout fetch (queryKey cohérentes, invalidation explicite).
+- Client Supabase via `@/lib/supabase` ; jamais d’instances multiples.
+- RLS activé côté Supabase ; ne pas faire confiance au seul front.
+- Variables sensibles dans `.env.local` (VITE_*) ; jamais commitées.
+
+## UI & Styles
+- Tailwind + shadcn ; utiliser `cn()` de `@/lib/utils` pour fusion de classes.
+- Composants shadcn dans `src/components/ui/`.
+- Pas de CSS inline hormis style dynamique nécessaire.
+
+## Structure
+- `src/components` : composants réutilisables et ui.
+- `src/hooks` : hooks personnalisés.
+- `src/lib` : supabase, utils, helpers.
+- `src/pages` : pages / routes.
+- `src/stores` : stores Zustand.
+- `src/types` : types et interfaces globaux.
+
+## Qualité
+- Code production-ready : pas de console.log oubliés, erreurs gérées.
+- Commentaires pour logique métier non triviale ; pas de commentaires évidents.
