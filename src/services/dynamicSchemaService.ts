@@ -62,8 +62,8 @@ class DynamicSchemaService {
    */
   async addCustomField(field: Omit<CustomField, 'id'>): Promise<CustomField> {
     try {
-      const { data, error } = await supabase
-        .from('custom_fields')
+      const { data, error } = await (supabase
+        .from('custom_fields') as any)
         .insert({
           ...field,
           created_at: new Date().toISOString(),
@@ -198,8 +198,8 @@ class DynamicSchemaService {
       }).filter(Boolean)
 
       if (valuesToInsert.length > 0) {
-        const { error } = await supabase
-          .from('custom_field_values')
+        const { error } = await (supabase
+          .from('custom_field_values') as any)
           .insert(valuesToInsert)
 
         if (error) throw error

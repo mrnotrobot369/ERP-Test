@@ -53,8 +53,8 @@ class ExportEngineService {
   async initializeTemplates(): Promise<void> {
     try {
       // Charger les templates depuis la base de données
-      const { data, error } = await supabase
-        .from('export_templates')
+      const { data, error } = await (supabase
+        .from('export_templates') as any)
         .select('*')
 
       if (error && error.code !== 'PGRST116') { // PGRST116 = table not found
@@ -66,7 +66,7 @@ class ExportEngineService {
         await this.createDefaultTemplates()
       } else {
         // Mettre en cache les templates existants
-        (data || []).forEach((template) => {
+        (data || []).forEach((template: any) => {
           this.templates.set(template.id, template as ExportTemplate)
         })
       }

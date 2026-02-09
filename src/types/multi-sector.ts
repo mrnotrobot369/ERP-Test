@@ -45,7 +45,7 @@ export interface CustomField {
 export interface CustomFieldValue {
   id?: string
   field_id: string
-  value: string
+  value: string | number | boolean | Date
   entity_id: string
   created_at?: string
 }
@@ -269,8 +269,8 @@ export interface SchemaDefinition {
   validation_rules: Record<string, {
     required: boolean
     type: string
-    validation?: CustomField['validation']
-    options?: string[]
+    validation?: CustomField['validation'] | undefined
+    options?: string[] | undefined
   }>
 }
 
