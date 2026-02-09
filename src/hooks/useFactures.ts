@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import type { FactureInsert, FactureRow } from '@/types/database'
+import { useAuthStore } from '@/stores/authStore'
 
 const queryKey = ['factures'] as const
 
@@ -20,16 +21,30 @@ export type FactureWithClient = {
 
 /** Liste des factures avec nom client (TanStack Query). */
 export function useFactures() {
+  console.log('🧾 FACTURES - Hook appelé depuis le composant')
+  const { user, initialized } = useAuthStore()
+
   return useQuery({
     queryKey,
-    queryFn: async () => {
+    queryFn: async (): Promise<FactureWithClient[]> => {
+      console.log('🧾 FACTURES - Début récupération des factures')
+      
       const { data, error } = await supabase
         .from('factures')
         .select('*, clients(name)')
         .order('created_at', { ascending: false })
-      if (error) throw error
+        
+      if (error) {
+        console.error('❌ FACTURES - Erreur récupération:', error)
+        throw error
+      }
+      
+      console.log('✅ FACTURES - Factures récupérées:', data?.length || 0)
       return data as FactureWithClient[]
     },
+    enabled: !!user && initialized, // ❌ Seulement si connecté et initialisé
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false,
   })
 }
 

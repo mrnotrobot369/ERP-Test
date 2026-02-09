@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import type { User, Session } from '@supabase/supabase-js'
-import { supabase } from '@/lib/supabase-debug'
+import { supabase } from '@/lib/supabase' // ❌ UTILISE LE CLIENT UNIFIÉ
 
 interface AuthState {
   user: User | null

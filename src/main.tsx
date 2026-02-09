@@ -14,6 +14,8 @@ const queryClient = new QueryClient({
       refetchInterval: false, // ❌ KILL SWITCH - NO INTERVAL
       refetchIntervalInBackground: false, // ❌ KILL SWITCH - NO BG
       refetchOnMount: false, // ❌ KILL SWITCH - NO MOUNT
+      gcTime: 10 * 60 * 1000, // 10 minutes garbage collection
+      throwOnError: false, // ❌ NO THROW ON ERROR
     },
     mutations: {
       retry: false, // ❌ KILL SWITCH - NO MUTATION RETRY

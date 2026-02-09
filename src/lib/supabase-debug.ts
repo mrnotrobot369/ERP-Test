@@ -67,16 +67,25 @@ export const testSupabaseConnection = async () => {
     console.log('  URL:', supabaseUrl)
     console.log('  Clé:', supabaseAnonKey ? supabaseAnonKey.substring(0, 20) + '...' : 'NON DÉFINIE')
     
-    // Test 2: Connexion simple
+    // Test 2: Connexion simple - ❌ OPTIMISÉ POUR ÉVITER LES 503
     console.log('✅ Test 2: Connexion simple')
-    const { data, error } = await supabase.from('products').select('count').single()
-    
-    if (error) {
-      console.error('❌ Erreur connexion:', error.message)
-      return { success: false, error: error.message }
+    try {
+      // Utiliser une requête plus simple et robuste
+      const { error } = await supabase
+        .from('products')
+        .select('id')
+        .limit(1)
+      
+      if (error) {
+        console.error('❌ Erreur connexion:', error.message)
+        return { success: false, error: error.message }
+      }
+      
+      console.log('✅ Connexion réussie - Test simple passé')
+    } catch (err: any) {
+      console.error('❌ Erreur inattendue connexion:', err.message)
+      return { success: false, error: err.message }
     }
-    
-    console.log('✅ Connexion réussie:', data)
     
     // Test 3: Lecture de données
     console.log('✅ Test 3: Lecture de données')
@@ -93,7 +102,7 @@ export const testSupabaseConnection = async () => {
       success: true, 
       data: { 
         config: { url: supabaseUrl, key: supabaseAnonKey },
-        connection: { count: data?.count },
+        connection: { status: 'connected' },
         products: products?.length || 0
       }
     }

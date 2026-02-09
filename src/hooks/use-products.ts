@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import supabase from '@/lib/supabaseClient' // ❌ SINGLETON CLIENT
+import { supabase } from '@/lib/supabase' // ❌ UTILISE LE CLIENT UNIFIÉ
 import type { ProductInsert, ProductRow } from '@/types/database'
 import type { ProductFilters } from '@/types/product'
 import { useAuthStore } from '@/stores/authStore'

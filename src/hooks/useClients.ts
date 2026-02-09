@@ -1,21 +1,36 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import type { ClientInsert, ClientRow } from '@/types/database'
+import { useAuthStore } from '@/stores/authStore'
 
 const queryKey = ['clients'] as const
 
 /** Liste des clients depuis Supabase (TanStack Query). */
 export function useClients() {
+  console.log('👥 CLIENTS - Hook appelé depuis le composant')
+  const { user, initialized } = useAuthStore()
+
   return useQuery({
     queryKey,
     queryFn: async (): Promise<ClientRow[]> => {
+      console.log('👥 CLIENTS - Début récupération des clients')
+      
       const { data, error } = await supabase
         .from('clients')
         .select('*')
         .order('created_at', { ascending: false })
-      if (error) throw error
+        
+      if (error) {
+        console.error('❌ CLIENTS - Erreur récupération:', error)
+        throw error
+      }
+      
+      console.log('✅ CLIENTS - Clients récupérés:', data?.length || 0)
       return data as ClientRow[]
     },
+    enabled: !!user && initialized, // ❌ Seulement si connecté et initialisé
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false,
   })
 }
 

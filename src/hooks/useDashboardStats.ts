@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import supabase from '@/lib/supabaseClient' // ❌ SINGLETON CLIENT
+import { supabase } from '@/lib/supabase' // ❌ UTILISE LE CLIENT UNIFIÉ
 import { useAuthStore } from '@/stores/authStore'
 
 export interface DashboardStats {
