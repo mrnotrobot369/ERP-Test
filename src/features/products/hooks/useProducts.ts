@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import type { ProductInsert, ProductRow } from '@/types/database'
-import type { ProductFilters } from '@/types/product'
+import type { ProductFilters } from '@/features/products/types'
 
 const queryKey = ['products'] as const
 
@@ -190,9 +190,9 @@ export function useToggleProductActive() {
     }) => {
       const { data, error } = await supabase
         .from('products')
-        .update({ 
-          is_active: isActive, 
-          updated_at: new Date().toISOString() 
+        .update({
+          is_active: isActive,
+          updated_at: new Date().toISOString()
         } as never)
         .eq('id', id)
         .select()
@@ -229,7 +229,7 @@ export function useUpdateProductStock() {
         .select('stock_quantity')
         .eq('id', id)
         .single()
-      
+
       if (fetchError) throw fetchError
       if (!currentProduct) throw new Error('Produit non trouvé')
 
@@ -250,7 +250,7 @@ export function useUpdateProductStock() {
 
       const { data, error } = await supabase
         .from('products')
-        .update({ 
+        .update({
           stock_quantity: newQuantity,
           updated_at: new Date().toISOString()
         } as never)

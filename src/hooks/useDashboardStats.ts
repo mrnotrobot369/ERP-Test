@@ -1,50 +1,100 @@
-import { useQuery } from '@tanstack/react-query'
+import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
+import { useAuthStore } from '@/features/auth/stores/authStore'
+import type { DashboardStats, DashboardMetrics } from '@/types/dashboard'
 
-export interface DashboardStats {
-  clientsCount: number
-  invoicesThisMonth: number
-  pendingRevenue: number
-}
-
-function startOfMonthISO(): string {
-  const d = new Date()
-  d.setDate(1)
-  d.setHours(0, 0, 0, 0)
-  return d.toISOString()
-}
-
-/** Stats dashboard : nombre de clients, factures du mois, CA en attente (draft + sent). */
 export function useDashboardStats() {
-  return useQuery({
-    queryKey: ['dashboard-stats'],
-    queryFn: async (): Promise<DashboardStats> => {
-      const startMonth = startOfMonthISO()
-
-      const [clientsRes, invoicesMonthRes, pendingRes] = await Promise.all([
-        supabase.from('clients').select('*', { count: 'exact', head: true }),
-        supabase
-          .from('factures')
-          .select('*', { count: 'exact', head: true })
-          .gte('created_at', startMonth),
-        supabase
-          .from('factures')
-          .select('total_ttc')
-          .in('status', ['draft', 'sent']),
-      ])
-
-      if (clientsRes.error) throw clientsRes.error
-      if (invoicesMonthRes.error) throw invoicesMonthRes.error
-      if (pendingRes.error) throw pendingRes.error
-
-      const pendingRevenue =
-        (pendingRes.data ?? []).reduce((sum, row) => sum + Number((row as { total_ttc: number }).total_ttc), 0) ?? 0
-
-      return {
-        clientsCount: clientsRes.count ?? 0,
-        invoicesThisMonth: invoicesMonthRes.count ?? 0,
-        pendingRevenue,
-      }
-    },
+  const user = useAuthStore((state) => state.user)
+  const [stats, setStats] = useState<DashboardStats>({
+    totalProducts: 0,
+    totalRevenue: 0,
+    totalOrders: 0,
+    activeClients: 0,
+    clientsCount: 0,
+    invoicesThisMonth: 0,
+    pendingRevenue: 0,
   })
+  const [metrics] = useState<DashboardMetrics>({
+    revenueByMonth: [],
+    topProducts: [],
+    clientGrowth: 0,
+  })
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!user) {
+      setLoading(false)
+      return
+    }
+
+    const fetchDashboardData = async () => {
+      try {
+        setError(null)
+
+        // Fetch products count
+        const { count: productsCount, error: productsError } =
+          await supabase.from('products').select('*', { count: 'exact', head: true })
+
+        if (productsError) console.error(productsError)
+
+        // Fetch metrics from documents table
+        const { data: docsResult, error: docsQueryError } =
+          await (supabase.from('documents' as any)
+            .select('total_amount, status, created_at, client_id, type') as any)
+
+        let totalRevenue = 0
+        let totalOrders = 0
+        let pendingRevenue = 0
+        let invoicesThisMonth = 0
+        const activeClientsSet = new Set()
+
+        if (!docsQueryError && docsResult) {
+          const docs = docsResult as any[]
+          const now = new Date()
+          const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+
+          docs.forEach(doc => {
+            if (doc.status === 'paid') {
+              totalRevenue += (doc.total_amount || 0)
+            }
+            if (doc.status === 'sent' || doc.status === 'accepted') {
+              pendingRevenue += (doc.total_amount || 0)
+            }
+            if (doc.type === 'invoice') {
+              totalOrders++
+              const docDate = new Date(doc.created_at)
+              if (docDate >= startOfMonth) {
+                invoicesThisMonth++
+              }
+            }
+            activeClientsSet.add(doc.client_id)
+          })
+        }
+
+        // Fetch clients count
+        const { count: clientsCount } = await supabase.from('clients').select('*', { count: 'exact', head: true })
+
+        setStats(prev => ({
+          ...prev,
+          totalProducts: productsCount || 0,
+          totalRevenue,
+          totalOrders,
+          activeClients: activeClientsSet.size,
+          clientsCount: clientsCount || 0,
+          invoicesThisMonth,
+          pendingRevenue,
+        }))
+
+        setLoading(false)
+      } catch (err) {
+        console.warn('Dashboard data fetch warning:', err)
+        setLoading(false)
+      }
+    }
+
+    fetchDashboardData()
+  }, [user])
+
+  return { stats, metrics, loading, error }
 }
