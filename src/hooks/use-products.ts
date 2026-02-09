@@ -66,6 +66,8 @@ export function useProducts(filters?: ProductFilters) {
     enabled: !!user && initialized, // N'exécuter que si l'utilisateur est connecté
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false,
+    refetchOnReconnect: true, // Rafraîchir lors de la reconnexion
+    refetchInterval: false, // Pas de rafraîchissement automatique
   })
 }
 
