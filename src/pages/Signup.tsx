@@ -40,17 +40,35 @@ export function Signup() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    console.log('🔐 SIGNUP PAGE - Début handleSubmit:', { 
+      email, 
+      hasPassword: !!password, 
+      passwordLength: password.length,
+      fullName 
+    })
+    
     setError(null)
 
-    if (!validateForm()) return
-
-    const { error: err } = await signUp(email, password)
-    if (err) {
-      setError(err.message)
+    if (!validateForm()) {
+      console.log('❌ SIGNUP PAGE - Validation échouée')
       return
     }
 
-    setSuccess(true)
+    try {
+      const { error: err } = await signUp(email, password)
+      
+      if (err) {
+        console.error('❌ SIGNUP PAGE - Erreur signUp:', err)
+        setError(err.message)
+        return
+      }
+      
+      console.log('✅ SIGNUP PAGE - SignUp réussi')
+      setSuccess(true)
+    } catch (err: any) {
+      console.error('❌ SIGNUP PAGE - Erreur inattendue:', err)
+      setError('Une erreur inattendue est survenue')
+    }
   }
 
   if (success) {

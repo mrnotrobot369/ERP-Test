@@ -30,6 +30,17 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   }
 })
 
+// Logging pour l'authentification
+supabase.auth.onAuthStateChange((event, session) => {
+  console.log('🔍 DEBUG SUPABASE - Auth state change global:', {
+    event,
+    hasUser: !!session?.user,
+    userId: session?.user?.id,
+    email: session?.user?.email,
+    timestamp: new Date().toISOString()
+  })
+})
+
 // Test de connexion simple
 export const testSupabaseConnection = async () => {
   console.log('🧪 TEST SUPABASE - Début du test de connexion complet')
@@ -72,6 +83,48 @@ export const testSupabaseConnection = async () => {
     }
   } catch (err: any) {
     console.error('❌ Erreur générale:', err.message)
+    return { success: false, error: err.message }
+  }
+}
+
+// Test d'authentification
+export const testSupabaseAuth = async () => {
+  console.log('🧪 TEST SUPABASE - Début du test d\'authentification')
+  
+  try {
+    // Test 1: Vérifier la session actuelle
+    console.log('✅ Test 1: Session actuelle')
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+    
+    if (sessionError) {
+      console.error('❌ Erreur session:', sessionError.message)
+      return { success: false, error: sessionError.message }
+    }
+    
+    console.log('✅ Session vérifiée:', {
+      hasSession: !!session,
+      hasUser: !!session?.user,
+      userId: session?.user?.id
+    })
+    
+    // Test 2: Test de l'écouteur d'état
+    console.log('✅ Test 2: Listener d\'état auth')
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('🔍 Auth state change test:', { event, hasUser: !!session?.user })
+    })
+    
+    setTimeout(() => subscription.unsubscribe(), 1000)
+    
+    return { 
+      success: true, 
+      data: { 
+        hasSession: !!session,
+        hasUser: !!session?.user,
+        userId: session?.user?.id
+      }
+    }
+  } catch (err: any) {
+    console.error('❌ Erreur auth test:', err.message)
     return { success: false, error: err.message }
   }
 }

@@ -3,7 +3,7 @@ import { LoadingSpinner } from '@/components/ui'
 import { StatusBadge } from '@/components/ui'
 import { useDashboardStats } from '@/hooks/useDashboardStats'
 import { useProducts, useLowStockProducts } from '@/hooks/use-products'
-import { testSupabaseConnection } from '@/lib/supabase-debug'
+import { testSupabaseConnection, testSupabaseAuth } from '@/lib/supabase-debug'
 import { Users, FileText, Banknote, Package, AlertTriangle, RefreshCw, Database, TrendingUp } from 'lucide-react'
 import { useState, useEffect } from 'react'
 
@@ -24,10 +24,30 @@ export function Dashboard() {
   const runConnectionTest = async () => {
     setIsTestingConnection(true)
     try {
-      const results = await testSupabaseConnection()
-      setTestResults(results)
-    } catch (err) {
-      setTestResults({ success: false, error: err.message })
+      console.log('🧪 DASHBOARD - Début test de connexion complet')
+      
+      // Test de connexion à la base
+      const connectionResults = await testSupabaseConnection()
+      
+      // Test d'authentification
+      const authResults = await testSupabaseAuth()
+      
+      const combinedResults = {
+        connection: connectionResults,
+        auth: authResults,
+        success: connectionResults.success && authResults.success,
+        timestamp: new Date().toISOString()
+      }
+      
+      console.log('🧪 DASHBOARD - Résultats combinés:', combinedResults)
+      setTestResults(combinedResults)
+    } catch (err: any) {
+      console.error('❌ DASHBOARD - Erreur test global:', err)
+      setTestResults({ 
+        success: false, 
+        error: err.message,
+        timestamp: new Date().toISOString()
+      })
     } finally {
       setIsTestingConnection(false)
     }
@@ -119,27 +139,35 @@ export function Dashboard() {
       {testResults && (
         <Card className={testResults.success ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}>
           <CardContent className="p-4">
-            <div className="flex items-center gap-3">
+            <div className="space-y-3">
               {testResults.success ? (
                 <>
-                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                  <div>
-                    <h4 className="font-semibold text-green-800">Connexion réussie</h4>
-                    <p className="text-sm text-green-600">
-                      Produits: {testResults.data?.products || 0} | 
-                      Total: {testResults.data?.connection?.count || 0}
-                    </p>
+                  <div className="flex items-center gap-3">
+                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                    <div>
+                      <h4 className="font-semibold text-green-800">Connexion réussie</h4>
+                      <p className="text-sm text-green-600">
+                        Base: {testResults.connection?.data?.products || 0} produits | 
+                        Auth: {testResults.auth?.data?.hasUser ? 'Session active' : 'Aucune session'}
+                      </p>
+                    </div>
                   </div>
                 </>
               ) : (
                 <>
-                  <AlertTriangle className="h-5 w-5 text-red-600 flex-shrink-0" />
-                  <div>
-                    <h4 className="font-semibold text-red-800">Échec de connexion</h4>
-                    <p className="text-sm text-red-600">{testResults.error}</p>
+                  <div className="flex items-center gap-3">
+                    <AlertTriangle className="h-5 w-5 text-red-600 flex-shrink-0" />
+                    <div>
+                      <h4 className="font-semibold text-red-800">Échec de connexion</h4>
+                      <p className="text-sm text-red-600">{testResults.error}</p>
+                    </div>
                   </div>
                 </>
               )}
+              
+              <div className="text-xs text-gray-500">
+                Test: {new Date(testResults.timestamp).toLocaleTimeString()}
+              </div>
             </div>
           </CardContent>
         </Card>

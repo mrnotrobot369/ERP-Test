@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { Layout } from '@/components/Layout'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { Dashboard } from '@/pages/Dashboard'
+import { AuthDebug } from '@/pages/AuthDebug'
 import { Clients } from '@/pages/Clients'
 import { Factures } from '@/pages/Factures'
 import { Products } from '@/pages/Products'
@@ -28,6 +29,7 @@ export const router = createBrowserRouter([
     ),
     children: [
       { index: true, element: <Dashboard /> },
+      { path: 'auth-debug', element: <AuthDebug /> },
       { path: 'clients', element: <Clients /> },
       { path: 'factures', element: <Factures /> },
       { path: 'products', element: <Products /> },

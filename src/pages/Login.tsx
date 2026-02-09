@@ -24,19 +24,31 @@ export function Login() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    console.log('🔐 LOGIN PAGE - Début handleSubmit:', { email, hasPassword: !!password })
+    
     setError(null)
     setShowSuccess(false)
     
-    const { error: err } = await signIn(email, password)
-    if (err) {
-      setError(err.message)
-      return
+    try {
+      const { error: err } = await signIn(email, password)
+      
+      if (err) {
+        console.error('❌ LOGIN PAGE - Erreur signIn:', err)
+        setError(err.message)
+        return
+      }
+      
+      console.log('✅ LOGIN PAGE - SignIn réussi, redirection vers:', from)
+      setShowSuccess(true)
+      
+      setTimeout(() => {
+        console.log('🔐 LOGIN PAGE - Redirection effective vers:', from)
+        navigate(from, { replace: true })
+      }, 1000)
+    } catch (err: any) {
+      console.error('❌ LOGIN PAGE - Erreur inattendue:', err)
+      setError('Une erreur inattendue est survenue')
     }
-    
-    setShowSuccess(true)
-    setTimeout(() => {
-      navigate(from, { replace: true })
-    }, 1000)
   }
 
   return (
