@@ -8,6 +8,7 @@ import { useAuthStore } from '@/stores/authStore'
 import { Mail, Lock, User, CheckCircle, AlertCircle } from 'lucide-react'
 
 export function Signup() {
+  console.log('🔐 SIGNUP PAGE - Render du composant Signup')
   const navigate = useNavigate()
   const user = useAuthStore((s) => s.user)
   const signUp = useAuthStore((s) => s.signUp)
@@ -21,7 +22,10 @@ export function Signup() {
   const [success, setSuccess] = useState(false)
 
   // Déplacer le return conditionnel APRÈS tous les hooks
-  if (user) return <Navigate to="/" replace />
+  if (user) {
+    console.log('🔐 SIGNUP PAGE - Utilisateur déjà connecté, redirection vers /')
+    return <Navigate to="/" replace />
+  }
 
   const validateForm = (): boolean => {
     if (password.length < 6) {

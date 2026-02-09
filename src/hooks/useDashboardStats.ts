@@ -28,10 +28,10 @@ export function useDashboardStats() {
       const startMonth = startOfMonthISO()
 
       const [clientsRes, invoicesMonthRes, pendingRes] = await Promise.all([
-        supabase.from('clients').select('*', { count: 'exact', head: true }),
+        supabase.from('clients').select('id', { count: 'exact' }), // ❌ SUPPRIMÉ HEAD
         supabase
           .from('factures')
-          .select('*', { count: 'exact', head: true })
+          .select('id', { count: 'exact' }) // ❌ SUPPRIMÉ HEAD
           .gte('created_at', startMonth),
         supabase
           .from('factures')

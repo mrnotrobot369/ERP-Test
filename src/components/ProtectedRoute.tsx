@@ -10,10 +10,14 @@ interface ProtectedRouteProps {
  * Affiche un loader pendant la récupération de la session.
  */
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
+  console.log('🛡️ PROTECTED ROUTE - Render du composant')
   const location = useLocation()
-  const { user, loading } = useAuthStore()
+  const { user, loading, initialized } = useAuthStore()
 
-  if (loading) {
+  console.log('🛡️ PROTECTED ROUTE - État:', { user: !!user, loading, initialized })
+
+  if (loading || !initialized) {
+    console.log('🛡️ PROTECTED ROUTE - Affichage loader')
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
@@ -22,8 +26,10 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   }
 
   if (!user) {
+    console.log('🛡️ PROTECTED ROUTE - Redirection vers login')
     return <Navigate to="/login" state={{ from: location }} replace /> 
   }
 
+  console.log('🛡️ PROTECTED ROUTE - Accès autorisé')
   return <>{children}</>
 }

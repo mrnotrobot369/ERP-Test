@@ -8,6 +8,7 @@ import { useAuthStore } from '@/stores/authStore'
 import { Mail, Lock, AlertCircle, CheckCircle } from 'lucide-react'
 
 export function Login() {
+  console.log('🔐 LOGIN PAGE - Render du composant Login')
   const navigate = useNavigate()
   const location = useLocation()
   const user = useAuthStore((s) => s.user)
@@ -22,7 +23,10 @@ export function Login() {
   const from = (location.state as { from?: { pathname: string } } | null)?.from?.pathname ?? '/'
   
   // Déplacer le return conditionnel APRÈS tous les hooks
-  if (user) return <Navigate to={from} replace />
+  if (user) {
+    console.log('🔐 LOGIN PAGE - Utilisateur déjà connecté, redirection vers:', from)
+    return <Navigate to={from} replace />
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

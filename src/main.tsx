@@ -8,12 +8,15 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 60 * 1000,
-      retry: false, // ❌ DÉSACTIVÉ TEMPORAIREMENT pour voir la vraie erreur
+      retry: false, // ❌ KILL SWITCH - FORCE NO RETRY
       refetchOnWindowFocus: false,
-      refetchOnReconnect: false, // ❌ DÉSACTIVÉ TEMPORAIREMENT
+      refetchOnReconnect: false, // ❌ KILL SWITCH - NO AUTO RECONNECT
+      refetchInterval: false, // ❌ KILL SWITCH - NO INTERVAL
+      refetchIntervalInBackground: false, // ❌ KILL SWITCH - NO BG
+      refetchOnMount: false, // ❌ KILL SWITCH - NO MOUNT
     },
     mutations: {
-      retry: false, // ❌ DÉSACTIVÉ TEMPORAIREMENT
+      retry: false, // ❌ KILL SWITCH - NO MUTATION RETRY
     },
   },
 })

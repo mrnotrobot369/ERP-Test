@@ -21,7 +21,7 @@ export function useProducts(filters?: ProductFilters) {
       
       let query = supabase
         .from('products')
-        .select('*')
+        .select('*') // ❌ UNIQUES DES GET SANS HEAD
         .order('created_at', { ascending: false })
 
       // Appliquer les filtres
@@ -343,7 +343,7 @@ export function useLowStockProducts() {
       
       const { data, error } = await supabase
         .from('products')
-        .select('*')
+        .select('*') // ❌ UNIQUE GET SANS HEAD
         .lte('stock_quantity', 'min_stock_level')
         .eq('is_active', true)
         .order('stock_quantity', { ascending: true })
