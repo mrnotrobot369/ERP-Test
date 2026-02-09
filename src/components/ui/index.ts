@@ -49,3 +49,5 @@ export {
   ToastViewport,
 } from './toast'
 export { Toaster } from './toaster'
+export { LoadingSpinner } from './LoadingSpinner'
+export { StatusBadge } from './StatusBadge'
