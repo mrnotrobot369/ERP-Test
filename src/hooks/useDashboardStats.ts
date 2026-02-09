@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { supabase } from '@/lib/supabase-debug'
+import supabase from '@/lib/supabaseClient' // ❌ SINGLETON CLIENT
 import { useAuthStore } from '@/stores/authStore'
 
 export interface DashboardStats {
@@ -17,6 +17,7 @@ function startOfMonthISO(): string {
 
 /** Stats dashboard : nombre de clients, factures du mois, CA en attente (draft + sent). */
 export function useDashboardStats() {
+  console.log('📊 DASHBOARD STATS - Hook appelé depuis le composant')
   const { user, initialized } = useAuthStore()
 
   return useQuery({

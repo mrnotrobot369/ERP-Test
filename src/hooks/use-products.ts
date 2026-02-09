@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { supabase } from '@/lib/supabase-debug'
+import supabase from '@/lib/supabaseClient' // ❌ SINGLETON CLIENT
 import type { ProductInsert, ProductRow } from '@/types/database'
 import type { ProductFilters } from '@/types/product'
 import { useAuthStore } from '@/stores/authStore'
@@ -11,6 +11,7 @@ const queryKey = ['products'] as const
  * @param filters - Filtres optionnels pour la recherche
  */
 export function useProducts(filters?: ProductFilters) {
+  console.log('📦 PRODUCTS - Hook appelé depuis le composant')
   const { user, initialized } = useAuthStore()
 
   return useQuery({
@@ -300,7 +301,7 @@ export function useProductCategories() {
       if (error) throw error
 
       // Extraire les catégories uniques
-      const categories = [...new Set(data.map((item: any) => item.category).filter(Boolean))]
+      const categories = [...new Set(data.map((item: any) => String(item.category)).filter(Boolean))] as string[]
       return categories.sort()
     },
   })
@@ -322,7 +323,7 @@ export function useProductBrands() {
       if (error) throw error
 
       // Extraire les marques uniques
-      const brands = [...new Set(data.map((item: any) => item.brand).filter(Boolean))]
+      const brands = [...new Set(data.map((item: any) => String(item.brand)).filter(Boolean))] as string[]
       return brands.sort()
     },
   })
@@ -332,6 +333,7 @@ export function useProductBrands() {
  * Récupère les produits avec stock faible.
  */
 export function useLowStockProducts() {
+  console.log('📦 LOW STOCK - Hook appelé depuis le composant')
   const { user, initialized } = useAuthStore()
 
   return useQuery({

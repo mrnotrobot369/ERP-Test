@@ -8,20 +8,12 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 60 * 1000,
-      retry: (failureCount, error: any) => {
-        // Ne pas réessayer pour les erreurs 401/403/404
-        if (error?.status === 401 || error?.status === 403 || error?.status === 404) {
-          return false
-        }
-        // Réessayer jusqu'à 3 fois pour les erreurs 503/500
-        return failureCount < 3
-      },
-      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+      retry: false, // ❌ DÉSACTIVÉ TEMPORAIREMENT pour voir la vraie erreur
       refetchOnWindowFocus: false,
-      refetchOnReconnect: true,
+      refetchOnReconnect: false, // ❌ DÉSACTIVÉ TEMPORAIREMENT
     },
     mutations: {
-      retry: 1,
+      retry: false, // ❌ DÉSACTIVÉ TEMPORAIREMENT
     },
   },
 })

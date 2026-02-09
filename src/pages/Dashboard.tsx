@@ -15,6 +15,7 @@ function formatMoney(value: number): string {
 }
 
 export function Dashboard() {
+  console.log('🏠 DASHBOARD - Render du composant Dashboard')
   const { data: stats, isLoading, error } = useDashboardStats()
   const { data: products, isLoading: productsLoading } = useProducts()
   const { data: lowStockProducts, isLoading: lowStockLoading } = useLowStockProducts()
@@ -54,12 +55,13 @@ export function Dashboard() {
   }
 
   useEffect(() => {
+    // ❌ DÉSACTIVÉ TEMPORAIREMENT - Ce useEffect peut causer une boucle infinie
     // Test automatique au chargement seulement si aucune donnée et pas d'erreur
-    if (!stats && !products && !error && !isLoading && !productsLoading) {
-      console.log('🧪 DASHBOARD - Auto-test au chargement')
-      runConnectionTest()
-    }
-  }, [stats, products, error, isLoading, productsLoading])
+    // if (!stats && !products && !error && !isLoading && !productsLoading) {
+    //   console.log('🧪 DASHBOARD - Auto-test au chargement')
+    //   runConnectionTest()
+    // }
+  }, []) // ❌ DÉPENDANCES VIDES pour éviter les boucles
 
   // Loading state unifié
   const isAnyLoading = isLoading || productsLoading || lowStockLoading || isTestingConnection
