@@ -13,14 +13,15 @@ export function Signup() {
   const signUp = useAuthStore((s) => s.signUp)
   const loading = useAuthStore((s) => s.loading)
 
-  if (user) return <Navigate to="/" replace />
-
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [fullName, setFullName] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+
+  // Déplacer le return conditionnel APRÈS tous les hooks
+  if (user) return <Navigate to="/" replace />
 
   const validateForm = (): boolean => {
     if (password.length < 6) {

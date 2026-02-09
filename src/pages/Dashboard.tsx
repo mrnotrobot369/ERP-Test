@@ -54,13 +54,17 @@ export function Dashboard() {
   }
 
   useEffect(() => {
-    // Test automatique au chargement
-    if (!stats && !products && !error) {
+    // Test automatique au chargement seulement si aucune donnée et pas d'erreur
+    if (!stats && !products && !error && !isLoading && !productsLoading) {
+      console.log('🧪 DASHBOARD - Auto-test au chargement')
       runConnectionTest()
     }
-  }, [])
+  }, [stats, products, error, isLoading, productsLoading])
 
-  if (isLoading || productsLoading || lowStockLoading) {
+  // Loading state unifié
+  const isAnyLoading = isLoading || productsLoading || lowStockLoading || isTestingConnection
+
+  if (isAnyLoading) {
     return (
       <div className="space-y-6">
         <div>
@@ -99,6 +103,20 @@ export function Dashboard() {
                 <p className="text-sm text-red-500 mt-4">
                   Vérifiez votre connexion Supabase ou les permissions RLS.
                 </p>
+                <button
+                  onClick={runConnectionTest}
+                  disabled={isTestingConnection}
+                  className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors"
+                >
+                  {isTestingConnection ? (
+                    <>
+                      <LoadingSpinner size="sm" />
+                      Test en cours...
+                    </>
+                  ) : (
+                    'Tester la connexion'
+                  )}
+                </button>
               </div>
             </div>
           </CardContent>

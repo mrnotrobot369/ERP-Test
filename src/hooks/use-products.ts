@@ -1,7 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase-debug'
 import type { ProductInsert, ProductRow } from '@/types/database'
 import type { ProductFilters } from '@/types/product'
+import { useAuthStore } from '@/stores/authStore'
 
 const queryKey = ['products'] as const
 
@@ -10,9 +11,13 @@ const queryKey = ['products'] as const
  * @param filters - Filtres optionnels pour la recherche
  */
 export function useProducts(filters?: ProductFilters) {
+  const { user, initialized } = useAuthStore()
+
   return useQuery({
     queryKey: [...queryKey, filters],
     queryFn: async (): Promise<ProductRow[]> => {
+      console.log('📦 PRODUCTS - Début récupération des produits')
+      
       let query = supabase
         .from('products')
         .select('*')
@@ -50,9 +55,17 @@ export function useProducts(filters?: ProductFilters) {
       }
 
       const { data, error } = await query
-      if (error) throw error
+      if (error) {
+        console.error('❌ PRODUCTS - Erreur récupération:', error)
+        throw error
+      }
+      
+      console.log('✅ PRODUCTS - Produits récupérés:', data?.length || 0)
       return data as ProductRow[]
     },
+    enabled: !!user && initialized, // N'exécuter que si l'utilisateur est connecté
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false,
   })
 }
 
@@ -317,9 +330,13 @@ export function useProductBrands() {
  * Récupère les produits avec stock faible.
  */
 export function useLowStockProducts() {
+  const { user, initialized } = useAuthStore()
+
   return useQuery({
     queryKey: [...queryKey, 'low-stock'],
     queryFn: async (): Promise<ProductRow[]> => {
+      console.log('📦 LOW STOCK - Début récupération produits stock faible')
+      
       const { data, error } = await supabase
         .from('products')
         .select('*')
@@ -327,8 +344,16 @@ export function useLowStockProducts() {
         .eq('is_active', true)
         .order('stock_quantity', { ascending: true })
 
-      if (error) throw error
+      if (error) {
+        console.error('❌ LOW STOCK - Erreur récupération:', error)
+        throw error
+      }
+      
+      console.log('✅ LOW STOCK - Produits stock faible récupérés:', data?.length || 0)
       return data as ProductRow[]
     },
+    enabled: !!user && initialized, // N'exécuter que si l'utilisateur est connecté
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false,
   })
 }

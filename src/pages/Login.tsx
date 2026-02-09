@@ -14,13 +14,15 @@ export function Login() {
   const signIn = useAuthStore((s) => s.signIn)
   const loading = useAuthStore((s) => s.loading)
 
-  const from = (location.state as { from?: { pathname: string } } | null)?.from?.pathname ?? '/'
-  if (user) return <Navigate to={from} replace />
-
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [showSuccess, setShowSuccess] = useState(false)
+
+  const from = (location.state as { from?: { pathname: string } } | null)?.from?.pathname ?? '/'
+  
+  // Déplacer le return conditionnel APRÈS tous les hooks
+  if (user) return <Navigate to={from} replace />
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
