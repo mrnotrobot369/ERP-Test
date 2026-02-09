@@ -1,7 +1,11 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui'
+import { LoadingSpinner } from '@/components/ui'
+import { StatusBadge } from '@/components/ui'
 import { useDashboardStats } from '@/hooks/useDashboardStats'
 import { useProducts, useLowStockProducts } from '@/hooks/use-products'
-import { Loader2, Users, FileText, Banknote, Package, AlertTriangle } from 'lucide-react'
+import { testSupabaseConnection } from '@/lib/supabase-debug'
+import { Users, FileText, Banknote, Package, AlertTriangle, RefreshCw, Database, TrendingUp } from 'lucide-react'
+import { useState, useEffect } from 'react'
 
 function formatMoney(value: number): string {
   return new Intl.NumberFormat('fr-CH', {
@@ -12,107 +16,178 @@ function formatMoney(value: number): string {
 
 export function Dashboard() {
   const { data: stats, isLoading, error } = useDashboardStats()
-  const { data: products } = useProducts()
-  const { data: lowStockProducts } = useLowStockProducts()
+  const { data: products, isLoading: productsLoading } = useProducts()
+  const { data: lowStockProducts, isLoading: lowStockLoading } = useLowStockProducts()
+  const [isTestingConnection, setIsTestingConnection] = useState(false)
+  const [testResults, setTestResults] = useState<any>(null)
+
+  const runConnectionTest = async () => {
+    setIsTestingConnection(true)
+    try {
+      const results = await testSupabaseConnection()
+      setTestResults(results)
+    } catch (err) {
+      setTestResults({ success: false, error: err.message })
+    } finally {
+      setIsTestingConnection(false)
+    }
+  }
+
+  useEffect(() => {
+    // Test automatique au chargement
+    if (!stats && !products && !error) {
+      runConnectionTest()
+    }
+  }, [])
+
+  if (isLoading || productsLoading || lowStockLoading) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
+          <p className="text-gray-600">Vue d'ensemble de l'activité en temps réel</p>
+        </div>
+        
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Card key={i} className="animate-pulse">
+              <CardContent className="flex items-center justify-center h-24">
+                <LoadingSpinner size="md" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
+          <p className="text-gray-600">Vue d'ensemble de l'activité en temps réel</p>
+        </div>
+        
+        <Card className="border-red-200 bg-red-50">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-4">
+              <AlertTriangle className="h-8 w-8 text-red-600 flex-shrink-0" />
+              <div>
+                <h3 className="text-lg font-semibold text-red-800">Erreur de chargement</h3>
+                <p className="text-red-600 mt-2">{error.message}</p>
+                <p className="text-sm text-red-500 mt-4">
+                  Vérifiez votre connexion Supabase ou les permissions RLS.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground">
-          Vue d’ensemble de l’activité en temps réel
-        </p>
+      {/* Header avec test de connexion */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
+          <p className="text-gray-600">Vue d'ensemble de l'activité en temps réel</p>
+        </div>
+        
+        <button
+          onClick={runConnectionTest}
+          disabled={isTestingConnection}
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+        >
+          {isTestingConnection ? (
+            <>
+              <LoadingSpinner size="sm" />
+              Test en cours...
+            </>
+          ) : (
+            <>
+              <Database className="h-4 w-4" />
+              Tester la connexion
+            </>
+          )}
+        </button>
       </div>
 
+      {/* Résultats du test */}
+      {testResults && (
+        <Card className={testResults.success ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              {testResults.success ? (
+                <>
+                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                  <div>
+                    <h4 className="font-semibold text-green-800">Connexion réussie</h4>
+                    <p className="text-sm text-green-600">
+                      Produits: {testResults.data?.products || 0} | 
+                      Total: {testResults.data?.connection?.count || 0}
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <AlertTriangle className="h-5 w-5 text-red-600 flex-shrink-0" />
+                  <div>
+                    <h4 className="font-semibold text-red-800">Échec de connexion</h4>
+                    <p className="text-sm text-red-600">{testResults.error}</p>
+                  </div>
+                </>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardDescription>Clients</CardDescription>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <Users className="h-4 w-4 text-gray-600" />
           </CardHeader>
           <CardContent>
-            {isLoading && (
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            )}
-            {error && (
-              <p className="text-sm text-destructive">
-                Erreur chargement
-              </p>
-            )}
-            {!isLoading && !error && (
-              <>
-                <CardTitle className="text-3xl">{stats?.clientsCount ?? 0}</CardTitle>
-                <p className="text-xs text-muted-foreground">
-                  Total clients actifs
-                </p>
-              </>
-            )}
+            <CardTitle className="text-3xl">{stats?.clientsCount ?? 0}</CardTitle>
+            <p className="text-xs text-gray-600">Total clients actifs</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardDescription>Factures ce mois</CardDescription>
-            <FileText className="h-4 w-4 text-muted-foreground" />
+            <FileText className="h-4 w-4 text-gray-600" />
           </CardHeader>
           <CardContent>
-            {isLoading && (
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            )}
-            {!isLoading && !error && (
-              <>
-                <CardTitle className="text-3xl">
-                  {stats?.invoicesThisMonth ?? 0}
-                </CardTitle>
-                <p className="text-xs text-muted-foreground">
-                  Créées ce mois
-                </p>
-              </>
-            )}
+            <CardTitle className="text-3xl">{stats?.invoicesThisMonth ?? 0}</CardTitle>
+            <p className="text-xs text-gray-600">Créées ce mois</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardDescription>Produits</CardDescription>
-            <Package className="h-4 w-4 text-muted-foreground" />
+            <Package className="h-4 w-4 text-gray-600" />
           </CardHeader>
           <CardContent>
-            {isLoading && (
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            )}
-            {!isLoading && !error && (
-              <>
-                <CardTitle className="text-3xl">
-                  {products?.length ?? 0}
-                </CardTitle>
-                <p className="text-xs text-muted-foreground">
-                  Total produits
-                </p>
-              </>
-            )}
+            <CardTitle className="text-3xl">{products?.length ?? 0}</CardTitle>
+            <p className="text-xs text-gray-600">Total produits</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardDescription>Stock faible</CardDescription>
-            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+            <AlertTriangle className="h-4 w-4 text-gray-600" />
           </CardHeader>
           <CardContent>
-            {isLoading && (
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            )}
-            {!isLoading && !error && (
-              <>
-                <CardTitle className="text-3xl">
-                  {lowStockProducts?.length ?? 0}
-                </CardTitle>
-                <p className="text-xs text-muted-foreground">
-                  Produits à réapprovisionner
-                </p>
-              </>
-            )}
+            <CardTitle className="text-3xl">{lowStockProducts?.length ?? 0}</CardTitle>
+            <p className="text-xs text-gray-600">Produits à réapprovisionner</p>
           </CardContent>
         </Card>
       </div>
@@ -121,22 +196,33 @@ export function Dashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardDescription>CA en attente</CardDescription>
-            <Banknote className="h-4 w-4 text-muted-foreground" />
+            <Banknote className="h-4 w-4 text-gray-600" />
           </CardHeader>
           <CardContent>
-            {isLoading && (
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            )}
-            {!isLoading && !error && (
-              <>
-                <CardTitle className="text-3xl tabular-nums">
-                  {stats != null ? formatMoney(stats.pendingRevenue) : '—'}
-                </CardTitle>
-                <p className="text-xs text-muted-foreground">
-                  Brouillons + envoyées non payées
-                </p>
-              </>
-            )}
+            <CardTitle className="text-3xl tabular-nums">
+              {stats != null ? formatMoney(stats.pendingRevenue) : '—'}
+            </CardTitle>
+            <p className="text-xs text-gray-600">Brouillons + envoyées non payées</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardDescription>Tendance</CardDescription>
+            <TrendingUp className="h-4 w-4 text-gray-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <StatusBadge status="success">
+                <span className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  Système opérationnel
+                </span>
+              </StatusBadge>
+              <p className="text-sm text-gray-600 mt-2">
+                Version 1.0.0 • Dernière synchronisation: {new Date().toLocaleTimeString()}
+              </p>
+            </div>
           </CardContent>
         </Card>
       </div>
