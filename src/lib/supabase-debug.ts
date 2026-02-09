@@ -16,30 +16,46 @@ if (!supabaseUrl || !supabaseAnonKey) {
   console.error('  Solution: Vérifiez votre fichier .env.local')
 }
 
-// Client avec logging détaillé
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: true,
-  },
-  global: {
-    headers: {
-      'X-Client-Info': 'erp-gtbp-debug'
-    }
-  }
-})
+// Client avec logging détaillé - ❌ SINGLETON PATTERN
+let supabaseDebugInstance: ReturnType<typeof createClient<Database>> | null = null
 
-// Logging pour l'authentification
-supabase.auth.onAuthStateChange((event, session) => {
-  console.log('🔍 DEBUG SUPABASE - Auth state change global:', {
-    event,
-    hasUser: !!session?.user,
-    userId: session?.user?.id,
-    email: session?.user?.email,
-    timestamp: new Date().toISOString()
-  })
-})
+export const getSupabaseDebugClient = () => {
+  if (!supabaseDebugInstance) {
+    console.log('🔍 DEBUG SUPABASE - Création de l\'instance singleton')
+    supabaseDebugInstance = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+      },
+      global: {
+        headers: {
+          'X-Client-Info': 'erp-gtbp-debug'
+        }
+      }
+    })
+  } else {
+    console.log('🔍 DEBUG SUPABASE - Réutilisation de l\'instance singleton')
+  }
+  return supabaseDebugInstance
+}
+
+export const supabase = getSupabaseDebugClient()
+
+// Logging pour l'authentification - ❌ DÉPLACÉ APRÈS CRÉATION DU CLIENT
+(() => {
+  if (supabaseDebugInstance) {
+    supabaseDebugInstance.auth.onAuthStateChange((event: any, session: any) => {
+      console.log('🔍 DEBUG SUPABASE - Auth state change global:', {
+        event,
+        hasUser: !!session?.user,
+        userId: session?.user?.id,
+        email: session?.user?.email,
+        timestamp: new Date().toISOString()
+      })
+    })
+  }
+})()
 
 // Test de connexion simple
 export const testSupabaseConnection = async () => {
@@ -109,7 +125,7 @@ export const testSupabaseAuth = async () => {
     
     // Test 2: Test de l'écouteur d'état
     console.log('✅ Test 2: Listener d\'état auth')
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event: any, session: any) => {
       console.log('🔍 Auth state change test:', { event, hasUser: !!session?.user })
     })
     

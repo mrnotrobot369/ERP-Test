@@ -36,7 +36,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ initialized: true })
 
     console.log('🔐 AUTH STORE - Récupération de la session existante...')
-    supabase.auth.getSession().then(({ data: { session }, error }) => {
+    supabase.auth.getSession().then(({ data: { session }, error }: any) => {
       if (error) {
         console.error('❌ AUTH STORE - Erreur getSession:', error)
       } else {
@@ -52,7 +52,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     console.log('🔐 AUTH STORE - Configuration du listener onAuthStateChange...')
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
+    } = supabase.auth.onAuthStateChange((event: any, session: any) => {
       console.log('🔐 AUTH STORE - Auth state change:', {
         event,
         hasUser: !!session?.user,
