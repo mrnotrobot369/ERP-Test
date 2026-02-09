@@ -18,8 +18,8 @@ ERP complet avec React + TypeScript + Supabase pour la gestion d'entreprise.
 
 ### Installation
 ```bash
-git clone https://github.com/USERNAME/GTBP-ERP.git
-cd GTBP-ERP
+git clone https://github.com/mrnotrobot369/ERP-Test.git
+cd ERP-Test
 npm install
 ```
 
@@ -37,7 +37,16 @@ VITE_SUPABASE_ANON_KEY=votre-cle-anon
 npm run dev
 ```
 
-## 📁 Structure
+## � Documentation
+
+Voir le dossier [`docs/`](./docs) pour la documentation complète:
+
+- [**Guide d'installation**](./docs/SETUP.md)
+- [**Architecture technique**](./docs/ARCHITECTURE.md)
+- [**Référence API**](./docs/API.md)
+- [**Guide de déploiement**](./docs/DEPLOY.md)
+
+## �📁 Structure
 ```
 src/
 ├── components/     # Composants React
@@ -57,8 +66,8 @@ src/
 
 ## 📊 Statistiques
 - **Modules**: 4/8 terminés (50%)
-- **Fichiers**: 91+ composants
-- **Lignes**: 18,300+ lignes
+- **Fichiers**: ~60 composants
+- **Lignes**: 18,000+ lignes
 - **Tests**: En cours
 
 ## 🎯 Modules Actifs
@@ -103,22 +112,29 @@ const { data, error } = await supabase.from('products').select('count').single()
 console.log(data, error)
 ```
 
-## 📝 Documentation
-
-- `PRODUCTS_MODULE_README.md` - Guide du module produits
-- `SUPABASE_TROUBLESHOOTING.md` - Aide technique Supabase
-- `GITHUB_PROJECT_PLAN.md` - Plan de développement
-- `GITHUB_SETUP_GUIDE.md` - Guide GitHub
-
 ## 🤝 Contribuer
-1. Fork le repository
-2. Créez une branche `feature/nom-de-la-feature`
-3. Commitez vos changements
-4. Push vers la branche
-5. Ouvrez une Pull Request
+
+Voir [CONTRIBUTING.md](./CONTRIBUTING.md) pour les guidelines de contribution.
+
+### Git Workflow
+```bash
+# Développement
+git checkout develop
+git checkout -b feature/nom-feature
+
+# Tests et validation
+npm run build
+npm run typecheck
+npm run lint
+
+# Push et PR
+git push origin feature/nom-feature
+# Créer une Pull Request vers develop
+```
 
 ## 📄 Licence
-MIT License
+
+MIT License - voir [LICENSE](./LICENSE)
 
 ---
 
